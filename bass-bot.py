@@ -8,19 +8,17 @@ BOT_ID = os.environ.get("BOT_ID")
 
 # constants
 AT_BOT = "<@" + BOT_ID + ">"
-EXAMPLE_COMMAND = "drop the bass"
+BASS_COMMAND = "drop the bass"
 
 # instantiate Slack
 slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
 
 
 def handle_command(command, spotify_channel):
-    response = "Not sure what you mean. Use the *" + EXAMPLE_COMMAND + \
-               "* command with numbers, delimited by spaces."
-    if command.startswith(EXAMPLE_COMMAND):
+    response = "Not sure what you mean. Use the *" + BASS_COMMAND
+    if command.startswith(BASS_COMMAND):
         response = "https://open.spotify.com/track/67nDjmo4SYiaVgWvFavDCb"
-    slack_client.api_call("chat.postMessage", channel=spotify_channel,
-                          text=response, as_user=True)
+    slack_client.api_call("chat.postMessage", channel=spotify_channel, text=response, as_user=True)
 
 
 def parse_slack_output(slack_rtm_output):
@@ -28,16 +26,14 @@ def parse_slack_output(slack_rtm_output):
     if output_list and len(output_list) > 0:
         for output in output_list:
             if output and 'text' in output:
-                # return text after the @ mention, whitespace removed
-                return output['text'], \
-                       output['channel']
+                return output['text'], output['channel']
     return None, None
 
 
 if __name__ == "__main__":
     READ_DELAY = 1  # 1 second delay between reading from fire hose
     if slack_client.rtm_connect():
-        print("StarterBot connected and running!")
+        print("Bass-bot connected and running!")
         while True:
             text, channel = parse_slack_output(slack_client.rtm_read())
             if text and channel:
