@@ -33,14 +33,21 @@ def parse_slack_output(slack_rtm_output):
 
 
 def find_music(message_text, slack_channel):
+    print "message_text: " + message_text
     text_detail = message_text.split('$[')[1].strip().lower()
+    print "text_detail: " + text_detail
     song_name = text_detail.split('-')[0]
+    print "song_name: " + song_name
     artist_name = text_detail.split('-')[1].split(']')[0]
+    print "artist_name: " + artist_name
     q = 'artist:' + artist_name + ' track:' + song_name
+    print "q: " + q
     result = spotify.search(q, 1, 0, 'track')
-    response = result['tracks']['items'][0]['external_urls']['spotify']
+    if result and 'tracks' in result and 'items' in result['tracks'] and len(result['tracks']['items']) > 0:
+        response = result['tracks']['items'][0]['external_urls']['spotify']
+    else:
+        response = result['tracks']['items'][0]['external_urls']['spotify']
     slack_client.api_call("chat.postMessage", channel=slack_channel, text=response, as_user=True)
-
 
 if __name__ == "__main__":
     READ_DELAY = 1  # 1 second delay between reading from fire hose
