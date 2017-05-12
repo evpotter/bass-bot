@@ -2,6 +2,7 @@ import os
 import time
 from slackclient import SlackClient
 import spotipy
+from random import randint
 
 
 # bass-bot's ID as an environment variable
@@ -16,10 +17,20 @@ slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
 spotify = spotipy.Spotify()
 
 
-def handle_command(command, slack_channel):
+def bass_command(command, slack_channel):
     response = "Not sure what you mean. Use the *" + BASS_COMMAND
     if command.startswith(BASS_COMMAND):
-        response = "https://open.spotify.com/track/67nDjmo4SYiaVgWvFavDCb"
+        try:
+            q = 'artist:bassnectar'
+            print q
+            result = spotify.search(q, 25, 0, 'track')
+            if result and 'tracks' in result and 'items' in result['tracks'] and len(result['tracks']['items']) > 0:
+                rand_num = randint(0, len(result['tracks']['items']))
+                response = result['tracks']['items'][rand_num]['external_urls']['spotify']
+            else:
+                response = "The spotify search returned no results"
+        except:
+            print "an error occurred that wasn't handled"
     slack_client.api_call("chat.postMessage", channel=slack_channel, text=response, as_user=True)
 
 
@@ -43,7 +54,7 @@ def find_music(message_text, slack_channel):
         if result and 'tracks' in result and 'items' in result['tracks'] and len(result['tracks']['items']) > 0:
             response = result['tracks']['items'][0]['external_urls']['spotify']
         else:
-            response = result['tracks']['items'][0]['external_urls']['spotify']
+            response = "The spotify search returned no results"
         slack_client.api_call("chat.postMessage", channel=slack_channel, text=response, as_user=True)
     except:
         print "an error occurred that wasn't handled"
@@ -57,7 +68,7 @@ if __name__ == "__main__":
             if text and channel:
                 if AT_BOT in text:
                     command_text = text.split(AT_BOT)[1].strip().lower()
-                    handle_command(command_text, channel)
+                    bass_command(command_text, channel)
                 if '$[' in text:
                     find_music(text, channel)
             time.sleep(READ_DELAY)
